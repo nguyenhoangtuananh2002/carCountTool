@@ -53,6 +53,10 @@ class VehicleCounterApp(QMainWindow):
         summary_button.clicked.connect(self.show_summary)
         top_layout.addWidget(summary_button)
 
+        reset_button = QPushButton("Reset All")
+        reset_button.clicked.connect(self.reset_all_counts)
+        top_layout.addWidget(reset_button)
+
         # Scroll area for vehicle counters
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -96,6 +100,12 @@ class VehicleCounterApp(QMainWindow):
     def update_count(self, key, label, change):
         self.counts[key] = max(0, self.counts[key] + change)
         label.setText(str(self.counts[key]))
+        
+    def reset_all_counts(self):
+        for key in self.counts:
+            self.counts[key] = 0
+            self.labels[key].setText("0")
+        QMessageBox.information(self, "Reset Done", "All counts have been reset to 0.")
 
     def edit_count(self, key, label):
         value, ok = QInputDialog.getInt(self, "Edit Count", f"Enter count for {key[0]} - {key[1]}:", self.counts[key], 0)
