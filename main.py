@@ -15,7 +15,7 @@ class VehicleCounterApp(QMainWindow):
         self.setWindowTitle("Vehicle Counter Tool")
         self.setGeometry(100, 100, 1200, 700)
 
-        self.directions = []  # Start with an empty list for directions
+        self.directions = [f"D{i+1}" for i in range(12)]
         self.vehicle_types = [
             "Xe hơi", "Xe bus nhỏ", "Xe bus lớn",
             "Xe chở nhỏ", "Xe chở trung", "Xe chở lớn"
@@ -23,7 +23,6 @@ class VehicleCounterApp(QMainWindow):
 
         self.counts = {}  # {(direction, vehicle_type): count}
         self.labels = {}  # {(direction, vehicle_type): QLabel}
-        self.direction_editors = {}  # {(direction): QLineEdit}
         self.init_ui()
 
     def init_ui(self):
@@ -62,10 +61,6 @@ class VehicleCounterApp(QMainWindow):
         clear_file_button.clicked.connect(self.clear_excel_file)
         top_layout.addWidget(clear_file_button)
 
-        add_direction_button = QPushButton("Add Direction")
-        add_direction_button.clicked.connect(self.add_direction)
-        top_layout.addWidget(add_direction_button)
-
         # Scroll area for vehicle counters
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -74,36 +69,14 @@ class VehicleCounterApp(QMainWindow):
         scroll_widget = QWidget()
         scroll_area.setWidget(scroll_widget)
 
-        self.grid_layout = QGridLayout(scroll_widget)
-        self.update_direction_ui()
+        grid_layout = QGridLayout(scroll_widget)
 
-    def update_direction_ui(self):
-        # Clear existing widgets in the grid layout
-        for i in reversed(range(self.grid_layout.count())):
-            widget = self.grid_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        # Add new direction group boxes
         for i, direction in enumerate(self.directions):
-            group_box = QGroupBox(f"Direction {direction}")
+            group_box = QGroupBox(direction)
             group_layout = QGridLayout()
             group_box.setLayout(group_layout)
 
-            self.grid_layout.addWidget(group_box, i // 2, i % 2)
-
-            # Editable direction name (double-click to edit)
-            direction_edit = QLineEdit(direction)
-            self.direction_editors[direction] = direction_edit
-            direction_edit.setFixedWidth(100)
-            direction_edit.setStyleSheet("font-size: 16px; padding: 5px;")
-            direction_edit.setAlignment(Qt.AlignCenter)
-
-            # Double-click event to allow renaming the direction
-            direction_edit.setContextMenuPolicy(Qt.CustomContextMenu)
-            direction_edit.customContextMenuRequested.connect(lambda pos, de=direction_edit: self.rename_direction(de))
-
-            group_layout.addWidget(direction_edit, 0, 0, 1, 4)
+            grid_layout.addWidget(group_box, i // 2, i % 2)
 
             for j, vehicle in enumerate(self.vehicle_types):
                 key = (direction, vehicle)
@@ -121,17 +94,17 @@ class VehicleCounterApp(QMainWindow):
                 plus_button.clicked.connect(lambda _, k=key, l=count_label: self.update_count(k, l, 1))
                 minus_button.clicked.connect(lambda _, k=key, l=count_label: self.update_count(k, l, -1))
 
-                group_layout.addWidget(vehicle_label, j + 1, 0)
-                group_layout.addWidget(count_label, j + 1, 1)
-                group_layout.addWidget(plus_button, j + 1, 2)
-                group_layout.addWidget(minus_button, j + 1, 3)
+                group_layout.addWidget(vehicle_label, j, 0)
+                group_layout.addWidget(count_label, j, 1)
+                group_layout.addWidget(plus_button, j, 2)
+                group_layout.addWidget(minus_button, j, 3)
 
                 self.labels[key] = count_label
 
     def update_count(self, key, label, change):
         self.counts[key] = max(0, self.counts[key] + change)
         label.setText(str(self.counts[key]))
-
+        
     def reset_all_counts(self):
         for key in self.counts:
             self.counts[key] = 0
@@ -236,23 +209,6 @@ class VehicleCounterApp(QMainWindow):
         layout.addWidget(close_button)
 
         dialog.exec()
-
-    def add_direction(self):
-        direction, ok = QInputDialog.getText(self, "Add Direction", "Enter new direction name:")
-        if ok and direction:
-            if direction not in self.directions:
-                self.directions.append(direction)
-                self.update_direction_ui()
-            else:
-                QMessageBox.warning(self, "Direction Exists", "This direction already exists.")
-
-    def rename_direction(self, direction_edit):
-        new_name, ok = QInputDialog.getText(self, "Rename Direction", "Enter new direction name:", text=direction_edit.text())
-        if ok and new_name:
-            direction_edit.setText(new_name)
-            direction = direction_edit.text()
-            self.directions = [direction if d == direction_edit.text() else d for d in self.directions]
-            self.update_direction_ui()
 
 
 if __name__ == "__main__":
