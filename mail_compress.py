@@ -13,7 +13,7 @@ def process_file(name, file_path):
     subject = input_lines[9].replace("Tên file đường dẫn :", '') + input_lines[10] + \
              f'/{input_lines[11].replace("Địa điểm phân công :", "")}' + \
              f'/{input_lines[12].replace("Ngày phân công : ", "")}' + \
-             f'/{name} ' + "HOÀN THÀNH"
+             f'/{name} ' + "/HOÀN THÀNH"
 
     # Constructing the body
     body = input_lines[13] + '\n' + input_lines[14] + '\n' + input_lines[15]
